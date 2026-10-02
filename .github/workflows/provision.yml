@@ -1,0 +1,70 @@
+name: provision
+
+on:
+  pull_request:
+    paths:
+      - "requests/*.yaml"
+  push:
+    branches: [master]
+    paths:
+      - "requests/*.yaml"
+
+jobs:
+  validate-and-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+
+      - name: validate request and summarize plan + policy verdict
+        id: summary
+        run: |
+          cd tools
+          for f in ../requests/*.yaml; do
+            python3 plan_summary.py "$f" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      # A real second-approver gate (GitHub branch protection requiring 2
+      # approving reviews on this repo) is configured at the repository
+      # level, not in this workflow; see README "Honest framing" for why a
+      # solo-maintainer repo cannot exercise a genuine second identity's
+      # approval end to end.
+
+  apply:
+    needs: validate-and-plan
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fetch the real GitHub Actions OIDC token
+        id: oidc
+        run: |
+          RESP=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=vault")
+          echo "::add-mask::$(echo "$RESP" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')"
+          echo "token=$(echo "$RESP" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')" >> "$GITHUB_OUTPUT"
+
+      # This step only runs inside an actual GitHub Actions job: the token
+      # above is real and signed by token.actions.githubusercontent.com, a
+      # real public OIDC issuer with a real JWKS endpoint. A Vault server
+      # with real network access (unlike this offline build machine) can
+      # set auth/jwt/config's oidc_discovery_url to that issuer directly,
+      # with no pre-shared public key needed, and validate this token for
+      # real. That path is authored here but was never exercised on this
+      # offline build machine; the locally-measured numbers in this repo's
+      # README use tools/mock_oidc_issuer.py and tools/issue_credentials.py
+      # instead, which exercise the exact same Vault JWT-auth mechanism
+      # against a self-signed stand-in issuer.
+      - name: apply with Vault-issued short-lived credentials (requires a real Vault server, not configured in this repo's CI)
+        run: echo "wire VAULT_ADDR / VAULT_NAMESPACE here against a real Vault server to complete this step"

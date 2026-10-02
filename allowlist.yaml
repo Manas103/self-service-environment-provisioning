@@ -1,0 +1,17 @@
+# Approved module source/version pairs an environment request may reference.
+# In production this would name compliant-terraform-module-policy-gate's modules
+# at a pinned git tag (e.g. git::https://github.com/Manas103/compliant-terraform-module-policy-gate.git//modules/key-vault?ref=v1.0.0).
+# This repo vendors a small local equivalent (modules/environment-unit) so the
+# pipeline below runs end to end offline; see README "Honest framing".
+approved_modules:
+  - source: "modules/environment-unit"
+    version: "v1.0.0"
+  - source: "modules/environment-unit"
+    version: "v1.1.0"
+
+approved_regions:
+  - eastus
+  - westus
+  - centralus
+
+max_ttl_hours: 168

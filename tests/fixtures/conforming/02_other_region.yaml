@@ -1,0 +1,15 @@
+environment_name: team-infra-stage
+module_source: modules/environment-unit
+module_version: v1.1.0
+region: westus
+ttl_hours: 48
+owner: alex.rivera@example.com
+cost_center: CC-2041
+purpose: integration test harness for the search ranking team
+requested_by: alex.rivera
+approvers:
+- dana.kim
+created_date: '2026-07-10'
+tags:
+  team: search
+  env: dev

@@ -1,0 +1,12 @@
+environment_name: team-payments-dev
+module_source: modules/environment-unit
+module_version: v1.1.0
+region: eastus
+ttl_hours: 72
+owner: priya.nair@example.com
+cost_center: CC-4821
+purpose: short-lived dev environment for the payments team's sprint demo
+requested_by: priya.nair
+approvers: [sam.okafor, jin.wu]
+created_date: "2026-07-14"
+tags: {team: payments, env: dev}

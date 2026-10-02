@@ -1,0 +1,15 @@
+environment_name: team-search-dev
+module_source: modules/environment-unit
+module_version: v1.1.0
+region: eastus
+ttl_hours: 500
+owner: alex.rivera@example.com
+cost_center: CC-1190
+purpose: integration test harness for the search ranking team
+requested_by: alex.rivera
+approvers:
+- dana.kim
+created_date: '2026-07-10'
+tags:
+  team: search
+  env: dev

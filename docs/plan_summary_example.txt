@@ -1,0 +1,47 @@
+### Environment request: `team-payments-dev`
+
+**Policy verdict:** PASS, all checks satisfied
+
+**Terraform plan:**
+```
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # module.env.local_file.manifest will be created
+  + resource "local_file" "manifest" {
+      + content              = (known after apply)
+      + content_base64sha256 = (known after apply)
+      + content_base64sha512 = (known after apply)
+      + content_md5          = (known after apply)
+      + content_sha1         = (known after apply)
+      + content_sha256       = (known after apply)
+      + content_sha512       = (known after apply)
+      + directory_permission = "0777"
+      + file_permission      = "0777"
+      + filename             = ".terraform/modules/env/../../artifacts/team-payments-dev.json"
+      + id                   = (known after apply)
+    }
+
+  # module.env.random_id.env will be created
+  + resource "random_id" "env" {
+      + b64_std     = (known after apply)
+      + b64_url     = (known after apply)
+      + byte_length = 4
+      + dec         = (known after apply)
+      + hex         = (known after apply)
+      + id          = (known after apply)
+      + keepers     = {
+          + "environment_name" = "team-payments-dev"
+        }
+    }
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+```

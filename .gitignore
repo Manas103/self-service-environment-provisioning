@@ -1,0 +1,19 @@
+# Terraform
+**/.terraform/
+*.tfplan
+*.tfstate
+*.tfstate.*
+
+# the local_file manifest artifacts modules/environment-unit writes when applied
+# (regenerate: terraform apply against any request's generated root module)
+artifacts/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+
+# IDE
+.vscode/
+.idea/
