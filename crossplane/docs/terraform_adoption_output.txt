@@ -1,0 +1,27 @@
+$ terraform state list
+kubernetes_config_map.bucket_config
+kubernetes_config_map.bucket_lifecycle_policy
+kubernetes_namespace.legacy_bucket
+kubernetes_role.bucket_reader
+kubernetes_role.bucket_writer
+kubernetes_role_binding.bucket_reader_binding
+kubernetes_role_binding.bucket_writer_binding
+kubernetes_secret.bucket_encryption_key
+kubernetes_service_account.bucket_access_role
+
+$ terraform plan -detailed-exitcode
+[0m[1mkubernetes_namespace.legacy_bucket: Refreshing state... [id=legacy-bucket][0m
+[0m[1mkubernetes_service_account.bucket_access_role: Refreshing state... [id=legacy-bucket/bucket-access-role][0m
+[0m[1mkubernetes_role.bucket_writer: Refreshing state... [id=legacy-bucket/bucket-writer][0m
+[0m[1mkubernetes_secret.bucket_encryption_key: Refreshing state... [id=legacy-bucket/bucket-encryption-key][0m
+[0m[1mkubernetes_role.bucket_reader: Refreshing state... [id=legacy-bucket/bucket-reader][0m
+[0m[1mkubernetes_config_map.bucket_config: Refreshing state... [id=legacy-bucket/bucket-config][0m
+[0m[1mkubernetes_config_map.bucket_lifecycle_policy: Refreshing state... [id=legacy-bucket/bucket-lifecycle-policy][0m
+[0m[1mkubernetes_role_binding.bucket_writer_binding: Refreshing state... [id=legacy-bucket/bucket-writer-binding][0m
+[0m[1mkubernetes_role_binding.bucket_reader_binding: Refreshing state... [id=legacy-bucket/bucket-reader-binding][0m
+
+[0m[1m[32mNo changes.[0m[1m Your infrastructure matches the configuration.[0m
+
+[0mTerraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+plan exit code: 0

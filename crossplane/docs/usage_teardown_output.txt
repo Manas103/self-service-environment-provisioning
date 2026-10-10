@@ -1,0 +1,56 @@
+
+=== pair: of='bucket-encryption-key' by='bucket-config' (bucket-config's encryption-key reference) ===
+of Object CR: checkout-service-qkzf8-nf7n4, by Object CR: checkout-service-qkzf8-6bw5g
+-- step 1: delete `of` with no Usage declared --
+   deleted=True in 0.31s (race: deletion proceeded while `by` still needs it)
+-- step 2: recreate `of` --
+-- step 3: declare Usage(of, by) --
+-- step 4: delete `of` again, with the Usage in place --
+   deleted=False after waiting 0.22s (race cleared: deletion is blocked)
+-- step 5: delete `by`, then retry deleting `of` (admission blocked it outright the first time, so nothing was ever marked Terminating to wait on) --
+   `of` deleted once `by` was gone: True in 0.36s; Usage gone: True
+-- step 6: recreate `of` and `by` to restore the claim --
+
+=== pair: of='bucket-access-role' by='bucket-reader-binding' (RoleBinding's ServiceAccount subject) ===
+of Object CR: checkout-service-qkzf8-jcrxh, by Object CR: checkout-service-qkzf8-jfhcj
+-- step 1: delete `of` with no Usage declared --
+   deleted=True in 0.31s (race: deletion proceeded while `by` still needs it)
+-- step 2: recreate `of` --
+-- step 3: declare Usage(of, by) --
+-- step 4: delete `of` again, with the Usage in place --
+   deleted=False after waiting 0.21s (race cleared: deletion is blocked)
+-- step 5: delete `by`, then retry deleting `of` (admission blocked it outright the first time, so nothing was ever marked Terminating to wait on) --
+   `of` deleted once `by` was gone: True in 0.35s; Usage gone: True
+-- step 6: recreate `of` and `by` to restore the claim --
+
+=== pair: of='bucket-reader-role' by='bucket-reader-binding' (RoleBinding's Role reference) ===
+of Object CR: checkout-service-qkzf8-vrc7l, by Object CR: checkout-service-qkzf8-jfhcj
+-- step 1: delete `of` with no Usage declared --
+   deleted=True in 0.31s (race: deletion proceeded while `by` still needs it)
+-- step 2: recreate `of` --
+-- step 3: declare Usage(of, by) --
+-- step 4: delete `of` again, with the Usage in place --
+   deleted=False after waiting 0.22s (race cleared: deletion is blocked)
+-- step 5: delete `by`, then retry deleting `of` (admission blocked it outright the first time, so nothing was ever marked Terminating to wait on) --
+   `of` deleted once `by` was gone: True in 0.36s; Usage gone: True
+-- step 6: recreate `of` and `by` to restore the claim --
+
+=== pair: of='postgres-connection' by='postgres-statefulset' (StatefulSet's ConfigMap envFrom) ===
+of Object CR: checkout-service-qkzf8-hcfcf, by Object CR: checkout-service-qkzf8-b6rkz
+-- step 1: delete `of` with no Usage declared --
+   deleted=True in 0.31s (race: deletion proceeded while `by` still needs it)
+-- step 2: recreate `of` --
+-- step 3: declare Usage(of, by) --
+-- step 4: delete `of` again, with the Usage in place --
+   deleted=False after waiting 0.21s (race cleared: deletion is blocked)
+-- step 5: delete `by`, then retry deleting `of` (admission blocked it outright the first time, so nothing was ever marked Terminating to wait on) --
+   `of` deleted once `by` was gone: True in 0.40s; Usage gone: True
+-- step 6: recreate `of` and `by` to restore the claim --
+
+=== summary ===
+bucket-encryption-key used by bucket-config: race cleared = True
+bucket-access-role used by bucket-reader-binding: race cleared = True
+bucket-reader-role used by bucket-reader-binding: race cleared = True
+postgres-connection used by postgres-statefulset: race cleared = True
+
+4 of 4 teardown races cleared by declaring resource usages

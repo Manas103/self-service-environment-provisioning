@@ -1,0 +1,36 @@
+found 44 eligible resources (excluding ['Namespace', 'PersistentVolumeClaim', 'Secret', 'ServiceAccount'])
+injecting out-of-band drift into 24 of them
+
+injected 24 out-of-band changes in 4.84s
+
+note: 5 of 24 were already reverted by the time of this check (revert faster than the inject+verify round trip): ['checkout-service-2-zqrjk-6dfqd', 'checkout-service-2-zqrjk-kmkhk', 'checkout-service-2-zqrjk-rvnk9', 'checkout-service-2-zqrjk-wjswz', 'checkout-service-dtzs9-5hgbm']
+
+checkout-service-dtzs9-5hgbm: reverted in 5.63s
+checkout-service-2-zqrjk-wjswz: reverted in 6.57s
+checkout-service-2-zqrjk-rvnk9: reverted in 7.18s
+checkout-service-2-zqrjk-kmkhk: reverted in 7.56s
+checkout-service-2-zqrjk-6dfqd: reverted in 9.71s
+checkout-service-2-zqrjk-jsp5t: reverted in 10.91s
+checkout-service-2-zqrjk-62j9r: reverted in 11.39s
+checkout-service-2-zqrjk-wlmqt: reverted in 12.47s
+checkout-service-2-zqrjk-f48vw: reverted in 14.51s
+checkout-service-2-zqrjk-fzvbs: reverted in 14.54s
+checkout-service-2-zqrjk-tck24: reverted in 15.04s
+checkout-service-2-zqrjk-6k7ck: reverted in 15.60s
+checkout-service-2-zqrjk-wcqfn: reverted in 16.58s
+checkout-service-dtzs9-4p8js: reverted in 16.87s
+checkout-service-2-zqrjk-6nmzz: reverted in 17.27s
+checkout-service-2-zqrjk-9qkdt: reverted in 17.46s
+checkout-service-2-zqrjk-59mc4: reverted in 18.11s
+checkout-service-2-zqrjk-lhsvg: reverted in 18.14s
+checkout-service-2-zqrjk-cpxf5: reverted in 18.79s
+checkout-service-2-zqrjk-448rz: reverted in 19.89s
+checkout-service-2-zqrjk-jdnn7: reverted in 19.97s
+checkout-service-2-zqrjk-dzk5p: NOT reverted within 90s
+checkout-service-2-zqrjk-j9tfl: NOT reverted within 90s
+checkout-service-2-zqrjk-xb7sl: NOT reverted within 90s
+
+21 of 24 reverted within 90s
+median revert time: 15.04s
+min 5.63s / max 19.97s / mean 14.01s
+wall clock for the whole measurement: 85.67s

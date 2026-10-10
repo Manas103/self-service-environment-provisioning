@@ -1,0 +1,263 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xobjectstores.platform.schonfeld.manas.dev
+spec:
+  compositeTypeRef:
+    apiVersion: platform.schonfeld.manas.dev/v1alpha1
+    kind: XObjectStore
+  writeConnectionSecretsToNamespace: crossplane-system
+  resources:
+    - name: namespace
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Namespace
+              metadata: {}
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.name
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.name
+
+    - name: bucket-config
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: bucket-config
+                labels: { "simaws.manas.dev/kind": object-store }
+              data:
+                versioning: "true"
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.manifest.data.bucket
+        - fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.manifest.data.region
+
+    - name: bucket-lifecycle-policy
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: bucket-lifecycle-policy
+                labels: { "simaws.manas.dev/kind": object-store }
+              data:
+                transitionAfterDays: "7"
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.lifecycleDays
+          toFieldPath: spec.forProvider.manifest.data.expirationAfterDays
+          transforms:
+            - type: convert
+              convert: { toType: string }
+
+    - name: bucket-encryption-key
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: bucket-encryption-key
+                labels: { "simaws.manas.dev/kind": object-store }
+              type: Opaque
+              stringData:
+                algorithm: AES256
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.manifest.stringData.keyId
+          transforms:
+            - type: string
+              string: { type: Format, fmt: "simulated-kms-key-%s" }
+
+    - name: bucket-access-role
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: bucket-access-role
+                labels: { "simaws.manas.dev/kind": scoped-iam-role }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: bucket-reader-role
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: bucket-reader
+                labels: { "simaws.manas.dev/kind": scoped-iam-policy }
+              rules:
+                - apiGroups: [""]
+                  resources: ["configmaps"]
+                  resourceNames: ["bucket-config", "bucket-lifecycle-policy"]
+                  verbs: ["get", "list", "watch"]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: bucket-writer-role
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: bucket-writer
+                labels: { "simaws.manas.dev/kind": scoped-iam-policy }
+              rules:
+                - apiGroups: [""]
+                  resources: ["configmaps"]
+                  resourceNames: ["bucket-config"]
+                  verbs: ["get", "update", "patch"]
+                - apiGroups: [""]
+                  resources: ["secrets"]
+                  resourceNames: ["bucket-encryption-key"]
+                  verbs: ["get"]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: bucket-reader-binding
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: bucket-reader-binding
+                labels: { "simaws.manas.dev/kind": scoped-iam-binding }
+              subjects:
+                - kind: ServiceAccount
+                  name: bucket-access-role
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: bucket-reader
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.subjects[0].namespace
+
+    - name: bucket-writer-binding
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: bucket-writer-binding
+                labels: { "simaws.manas.dev/kind": scoped-iam-binding }
+              subjects:
+                - kind: ServiceAccount
+                  name: bucket-access-role
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: bucket-writer
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.subjects[0].namespace
+
+    - name: default-deny-netpol
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: networking.k8s.io/v1
+              kind: NetworkPolicy
+              metadata:
+                name: default-deny
+                labels: { "simaws.manas.dev/kind": object-store-netpol }
+              spec:
+                podSelector: {}
+                policyTypes: ["Ingress"]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace

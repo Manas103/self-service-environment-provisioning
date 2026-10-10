@@ -1,0 +1,41 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xobjectstores.platform.schonfeld.manas.dev
+spec:
+  group: platform.schonfeld.manas.dev
+  names:
+    kind: XObjectStore
+    plural: xobjectstores
+  claimNames:
+    kind: ObjectStore
+    plural: objectstores
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                targetNamespace:
+                  type: string
+                region:
+                  type: string
+                  default: us-east-1
+                lifecycleDays:
+                  type: integer
+                  default: 30
+              required:
+                - bucketName
+                - targetNamespace
+            status:
+              type: object
+              properties:
+                bucketArn:
+                  type: string

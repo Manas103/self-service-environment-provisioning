@@ -1,0 +1,272 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xmanagedpostgreses.platform.schonfeld.manas.dev
+spec:
+  compositeTypeRef:
+    apiVersion: platform.schonfeld.manas.dev/v1alpha1
+    kind: XManagedPostgres
+  resources:
+    - name: namespace
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Namespace
+              metadata: {}
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.name
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.name
+
+    - name: postgres-credentials
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: postgres-credentials
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              type: Opaque
+              stringData:
+                username: app
+                password: simulated-rds-master-password
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-tls
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: postgres-tls
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              type: Opaque
+              stringData:
+                mode: require
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-connection
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: postgres-connection
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              data:
+                port: "5432"
+                sslmode: require
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.dbName
+          toFieldPath: spec.forProvider.manifest.data.dbname
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.data.host
+          transforms:
+            - type: string
+              string: { type: Format, fmt: "postgres.%s.svc.cluster.local" }
+
+    - name: postgres-data-pvc
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: PersistentVolumeClaim
+              metadata:
+                name: postgres-data
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 1Gi
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.storageSize
+          toFieldPath: spec.forProvider.manifest.spec.resources.requests.storage
+
+    - name: postgres-statefulset
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata:
+                name: postgres
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                serviceName: postgres-headless
+                replicas: 1
+                selector:
+                  matchLabels: { app: postgres }
+                template:
+                  metadata:
+                    labels: { app: postgres }
+                  spec:
+                    containers:
+                      - name: postgres
+                        image: postgres:16-alpine
+                        ports: [{ containerPort: 5432 }]
+                        envFrom:
+                          - configMapRef: { name: postgres-connection }
+                        env:
+                          - name: POSTGRES_USER
+                            valueFrom: { secretKeyRef: { name: postgres-credentials, key: username } }
+                          - name: POSTGRES_PASSWORD
+                            valueFrom: { secretKeyRef: { name: postgres-credentials, key: password } }
+                          - name: POSTGRES_DB
+                            valueFrom: { configMapKeyRef: { name: postgres-connection, key: dbname } }
+                        volumeMounts:
+                          - { name: data, mountPath: /var/lib/postgresql/data }
+                    volumes:
+                      - name: data
+                        persistentVolumeClaim: { claimName: postgres-data }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-service
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: postgres
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                selector: { app: postgres }
+                ports: [{ port: 5432, targetPort: 5432 }]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-headless-service
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: postgres-headless
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                clusterIP: None
+                selector: { app: postgres }
+                ports: [{ port: 5432, targetPort: 5432 }]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-netpol
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: networking.k8s.io/v1
+              kind: NetworkPolicy
+              metadata:
+                name: postgres-only-from-namespace
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                podSelector: { matchLabels: { app: postgres } }
+                policyTypes: ["Ingress"]
+                ingress:
+                  - ports: [{ port: 5432, protocol: TCP }]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-pdb
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: policy/v1
+              kind: PodDisruptionBudget
+              metadata:
+                name: postgres-pdb
+                labels: { "simaws.manas.dev/kind": managed-postgres }
+              spec:
+                maxUnavailable: 0
+                selector: { matchLabels: { app: postgres } }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.targetNamespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace

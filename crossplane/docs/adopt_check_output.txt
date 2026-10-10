@@ -1,0 +1,45 @@
+=== before adoption ===
+('Namespace', None, 'legacy-bucket') ('b2122144-97e7-4cc7-8ff7-a2d11897f947', '2075')
+('ConfigMap', 'legacy-bucket', 'bucket-config') ('24321ae5-2aa3-4878-823a-06f00bdc71ba', '2076')
+('ConfigMap', 'legacy-bucket', 'bucket-lifecycle-policy') ('777f9274-048c-4009-bb06-c5efa61c3276', '2078')
+('Secret', 'legacy-bucket', 'bucket-encryption-key') ('294b145d-4dab-48ab-9c8f-5d3b99fac616', '2079')
+('ServiceAccount', 'legacy-bucket', 'bucket-access-role') ('bd6ef475-98ee-4992-ac82-33cb55c322e7', '2080')
+('Role', 'legacy-bucket', 'bucket-reader') ('6f8932a0-a509-41cf-a2e9-a8a133d4b8de', '2081')
+('Role', 'legacy-bucket', 'bucket-writer') ('f940ec0d-4b78-4268-937e-98f19bf45949', '2083')
+('RoleBinding', 'legacy-bucket', 'bucket-reader-binding') ('3e90d441-7436-4810-b9bd-467bf08ce8ee', '2085')
+('RoleBinding', 'legacy-bucket', 'bucket-writer-binding') ('e80d746b-d96c-4795-a22c-575c0176f2c3', '2087')
+
+=== applying 9 Object CRs (default FullControl management policy) ===
+object.kubernetes.crossplane.io/adopt-namespace-legacy-bucket unchanged
+object.kubernetes.crossplane.io/adopt-configmap-bucket-config unchanged
+object.kubernetes.crossplane.io/adopt-configmap-bucket-lifecycle-policy unchanged
+object.kubernetes.crossplane.io/adopt-secret-bucket-encryption-key unchanged
+object.kubernetes.crossplane.io/adopt-serviceaccount-bucket-access-role unchanged
+object.kubernetes.crossplane.io/adopt-role-bucket-reader unchanged
+object.kubernetes.crossplane.io/adopt-role-bucket-writer unchanged
+object.kubernetes.crossplane.io/adopt-rolebinding-bucket-reader-binding unchanged
+object.kubernetes.crossplane.io/adopt-rolebinding-bucket-writer-binding unchanged
+
+=== waiting for sync ===
+adopt-configmap-bucket-config {'Synced': 'True', 'Ready': 'True'}
+adopt-configmap-bucket-lifecycle-policy {'Synced': 'True', 'Ready': 'True'}
+adopt-namespace-legacy-bucket {'Synced': 'True', 'Ready': 'True'}
+adopt-role-bucket-reader {'Synced': 'True', 'Ready': 'True'}
+adopt-role-bucket-writer {'Synced': 'True', 'Ready': 'True'}
+adopt-rolebinding-bucket-reader-binding {'Synced': 'True', 'Ready': 'True'}
+adopt-rolebinding-bucket-writer-binding {'Synced': 'True', 'Ready': 'True'}
+adopt-secret-bucket-encryption-key {'Synced': 'True', 'Ready': 'True'}
+adopt-serviceaccount-bucket-access-role {'Synced': 'True', 'Ready': 'True'}
+
+=== after adoption ===
+('Namespace', None, 'legacy-bucket') ('b2122144-97e7-4cc7-8ff7-a2d11897f947', '2075')
+('ConfigMap', 'legacy-bucket', 'bucket-config') ('24321ae5-2aa3-4878-823a-06f00bdc71ba', '2076')
+('ConfigMap', 'legacy-bucket', 'bucket-lifecycle-policy') ('777f9274-048c-4009-bb06-c5efa61c3276', '2078')
+('Secret', 'legacy-bucket', 'bucket-encryption-key') ('294b145d-4dab-48ab-9c8f-5d3b99fac616', '2079')
+('ServiceAccount', 'legacy-bucket', 'bucket-access-role') ('bd6ef475-98ee-4992-ac82-33cb55c322e7', '2080')
+('Role', 'legacy-bucket', 'bucket-reader') ('6f8932a0-a509-41cf-a2e9-a8a133d4b8de', '2081')
+('Role', 'legacy-bucket', 'bucket-writer') ('f940ec0d-4b78-4268-937e-98f19bf45949', '2083')
+('RoleBinding', 'legacy-bucket', 'bucket-reader-binding') ('3e90d441-7436-4810-b9bd-467bf08ce8ee', '2085')
+('RoleBinding', 'legacy-bucket', 'bucket-writer-binding') ('e80d746b-d96c-4795-a22c-575c0176f2c3', '2087')
+
+9 resources adopted; 0 re-creates (uid changed); 0 deletes; 0 in-place updates (same uid, different resourceVersion)

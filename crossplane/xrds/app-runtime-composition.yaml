@@ -1,0 +1,317 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xappruntimes.platform.schonfeld.manas.dev
+spec:
+  compositeTypeRef:
+    apiVersion: platform.schonfeld.manas.dev/v1alpha1
+    kind: XAppRuntime
+  resources:
+    - name: object-store
+      base:
+        apiVersion: platform.schonfeld.manas.dev/v1alpha1
+        kind: XObjectStore
+        spec: {}
+      patches:
+        - fromFieldPath: spec.bucketName
+          toFieldPath: spec.bucketName
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.targetNamespace
+          transforms:
+            - type: string
+              string: { type: Format, fmt: "%s-store" }
+        - fromFieldPath: spec.maxTTLDays
+          toFieldPath: spec.lifecycleDays
+
+    - name: managed-postgres
+      base:
+        apiVersion: platform.schonfeld.manas.dev/v1alpha1
+        kind: XManagedPostgres
+        spec: {}
+      patches:
+        - fromFieldPath: spec.dbName
+          toFieldPath: spec.dbName
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.targetNamespace
+          transforms:
+            - type: string
+              string: { type: Format, fmt: "%s-db" }
+        - fromFieldPath: spec.storageSize
+          toFieldPath: spec.storageSize
+
+    - name: namespace
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Namespace
+              metadata: {}
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.name
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.name
+
+    - name: resourcequota
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ResourceQuota
+              metadata:
+                name: app-runtime-quota
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                hard:
+                  pods: "20"
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: limitrange
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: app-runtime-limits
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                limits:
+                  - type: Container
+                    defaultRequest: { cpu: 100m, memory: 128Mi }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.cpuLimit
+          toFieldPath: spec.forProvider.manifest.spec.limits[0].default.cpu
+        - fromFieldPath: spec.memoryLimit
+          toFieldPath: spec.forProvider.manifest.spec.limits[0].default.memory
+
+    - name: netpol
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: networking.k8s.io/v1
+              kind: NetworkPolicy
+              metadata:
+                name: app-runtime-allow-same-namespace
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                podSelector: {}
+                policyTypes: ["Ingress"]
+                ingress:
+                  - from: [{ podSelector: {} }]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: serviceaccount
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: app-runtime
+                labels: { "simaws.manas.dev/kind": app-runtime }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: role
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: Role
+              metadata:
+                name: app-runtime-role
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              rules:
+                - apiGroups: [""]
+                  resources: ["configmaps", "secrets"]
+                  verbs: ["get", "list"]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: rolebinding
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: app-runtime-binding
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              subjects:
+                - kind: ServiceAccount
+                  name: app-runtime
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: app-runtime-role
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.subjects[0].namespace
+
+    - name: app-config
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: app-config
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              data: {}
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.data.appName
+        - fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.manifest.data.bucketName
+        - fromFieldPath: spec.dbName
+          toFieldPath: spec.forProvider.manifest.data.dbName
+
+    - name: deployment
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: app
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                replicas: 2
+                selector:
+                  matchLabels: { app: app }
+                template:
+                  metadata:
+                    labels: { app: app }
+                  spec:
+                    serviceAccountName: app-runtime
+                    containers:
+                      - name: app
+                        image: nginx:1.27-alpine
+                        ports: [{ containerPort: 8080 }]
+                        envFrom:
+                          - configMapRef: { name: app-config }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+        - fromFieldPath: spec.replicas
+          toFieldPath: spec.forProvider.manifest.spec.replicas
+
+    - name: service
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: app
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                selector: { app: app }
+                ports: [{ port: 80, targetPort: 8080 }]
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: pdb
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          providerConfigRef: { name: simulated-aws }
+          forProvider:
+            manifest:
+              apiVersion: policy/v1
+              kind: PodDisruptionBudget
+              metadata:
+                name: app-pdb
+                labels: { "simaws.manas.dev/kind": app-runtime }
+              spec:
+                minAvailable: 1
+                selector: { matchLabels: { app: app } }
+          readiness: { policy: SuccessfulCreate }
+      patches:
+        - fromFieldPath: spec.appName
+          toFieldPath: metadata.namespace
+        - fromFieldPath: spec.appName
+          toFieldPath: spec.forProvider.manifest.metadata.namespace

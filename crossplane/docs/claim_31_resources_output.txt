@@ -1,0 +1,103 @@
+$ kubectl get appruntime checkout-service -n default
+NAME               SYNCED   READY   CONNECTION-SECRET   AGE
+checkout-service   True     True                        107s
+
+$ kubectl get objects.kubernetes.crossplane.io --no-headers | grep -v connectivity-test | wc -l
+71
+
+$ kubectl get objects.kubernetes.crossplane.io | grep -v connectivity-test
+NAME                                      KIND                    PROVIDERCONFIG   SYNCED   READY   AGE
+adopt-configmap-bucket-config             ConfigMap               simulated-aws    True     True    40m
+adopt-configmap-bucket-lifecycle-policy   ConfigMap               simulated-aws    True     True    40m
+adopt-namespace-legacy-bucket             Namespace               simulated-aws    True     True    40m
+adopt-role-bucket-reader                  Role                    simulated-aws    True     True    40m
+adopt-role-bucket-writer                  Role                    simulated-aws    True     True    40m
+adopt-rolebinding-bucket-reader-binding   RoleBinding             simulated-aws    True     True    40m
+adopt-rolebinding-bucket-writer-binding   RoleBinding             simulated-aws    True     True    40m
+adopt-secret-bucket-encryption-key        Secret                  simulated-aws    True     True    40m
+adopt-serviceaccount-bucket-access-role   ServiceAccount          simulated-aws    True     True    40m
+checkout-service                          Namespace               simulated-aws    True     True    104s
+checkout-service-2                        Namespace               simulated-aws    True     True    3m22s
+checkout-service-2-db                     Namespace               simulated-aws    True     True    3m22s
+checkout-service-2-k575s-55x4b            Role                    simulated-aws    True     True    3m22s
+checkout-service-2-k575s-5zwsl            ResourceQuota           simulated-aws    True     True    3m22s
+checkout-service-2-k575s-64bbn            NetworkPolicy           simulated-aws    True     True    3m22s
+checkout-service-2-k575s-86g7q            NetworkPolicy           simulated-aws    True     True    3m22s
+checkout-service-2-k575s-8dkv6            Service                 simulated-aws    True     True    3m22s
+checkout-service-2-k575s-bhl72            ConfigMap               simulated-aws    True     True    3m22s
+checkout-service-2-k575s-bv2hf            Service                 simulated-aws    True     True    3m22s
+checkout-service-2-k575s-cl694            Role                    simulated-aws    True     True    3m22s
+checkout-service-2-k575s-cwlnt            RoleBinding             simulated-aws    True     True    3m22s
+checkout-service-2-k575s-dg87f            RoleBinding             simulated-aws    True     True    3m22s
+checkout-service-2-k575s-gzpbt            Secret                  simulated-aws    True     True    3m22s
+checkout-service-2-k575s-h85hp            Secret                  simulated-aws    True     True    3m22s
+checkout-service-2-k575s-hvhbn            ConfigMap               simulated-aws    True     True    3m22s
+checkout-service-2-k575s-l95dm            Secret                  simulated-aws    True     True    3m22s
+checkout-service-2-k575s-lnrhb            StatefulSet             simulated-aws    True     True    3m22s
+checkout-service-2-k575s-nbjt8            ConfigMap               simulated-aws    True     True    3m22s
+checkout-service-2-k575s-p9xg4            PodDisruptionBudget     simulated-aws    True     True    3m22s
+checkout-service-2-k575s-qg2wh            RoleBinding             simulated-aws    True     True    3m22s
+checkout-service-2-k575s-qp6zh            NetworkPolicy           simulated-aws    True     True    3m22s
+checkout-service-2-k575s-sxmg5            ConfigMap               simulated-aws    True     True    3m22s
+checkout-service-2-k575s-t2jgs            PodDisruptionBudget     simulated-aws    True     True    3m22s
+checkout-service-2-k575s-t4km7            ServiceAccount          simulated-aws    True     True    3m22s
+checkout-service-2-k575s-t5l6k            Service                 simulated-aws    True     True    3m22s
+checkout-service-2-k575s-t8n5l            ServiceAccount          simulated-aws    True     True    3m22s
+checkout-service-2-k575s-tj7cf            Role                    simulated-aws    True     True    3m22s
+checkout-service-2-k575s-vp7m4            PersistentVolumeClaim   simulated-aws    True     True    3m22s
+checkout-service-2-k575s-w6kn8            Deployment              simulated-aws    True     True    3m22s
+checkout-service-2-k575s-zbjc6            LimitRange              simulated-aws    True     True    3m22s
+checkout-service-2-store                  Namespace               simulated-aws    True     True    3m22s
+checkout-service-762pr-4vrpv              ResourceQuota           simulated-aws    True     True    104s
+checkout-service-762pr-5l8d6              Role                    simulated-aws    True     True    103s
+checkout-service-762pr-75l27              NetworkPolicy           simulated-aws    True     True    103s
+checkout-service-762pr-78l68              RoleBinding             simulated-aws    True     True    103s
+checkout-service-762pr-8c6hp              PodDisruptionBudget     simulated-aws    True     True    104s
+checkout-service-762pr-cd2b4              Secret                  simulated-aws    True     True    103s
+checkout-service-762pr-fbvqf              NetworkPolicy           simulated-aws    True     True    104s
+checkout-service-762pr-g6r8p              Role                    simulated-aws    True     True    104s
+checkout-service-762pr-gqcdl              Secret                  simulated-aws    True     True    103s
+checkout-service-762pr-gv9ng              NetworkPolicy           simulated-aws    True     True    103s
+checkout-service-762pr-hcpjf              ConfigMap               simulated-aws    True     True    103s
+checkout-service-762pr-j2mf9              Service                 simulated-aws    True     True    103s
+checkout-service-762pr-jsg4m              ConfigMap               simulated-aws    True     True    103s
+checkout-service-762pr-krm6z              Role                    simulated-aws    True     True    103s
+checkout-service-762pr-lh9gs              StatefulSet             simulated-aws    True     True    103s
+checkout-service-762pr-mh5tx              ServiceAccount          simulated-aws    True     True    104s
+checkout-service-762pr-ndzn7              ConfigMap               simulated-aws    True     True    104s
+checkout-service-762pr-pxtj9              LimitRange              simulated-aws    True     True    104s
+checkout-service-762pr-q49lc              ServiceAccount          simulated-aws    True     True    103s
+checkout-service-762pr-qbnck              RoleBinding             simulated-aws    True     True    104s
+checkout-service-762pr-rjtqm              PersistentVolumeClaim   simulated-aws    True     True    103s
+checkout-service-762pr-rjx5b              Service                 simulated-aws    True     True    104s
+checkout-service-762pr-ttb7x              Service                 simulated-aws    True     True    103s
+checkout-service-762pr-vt6pm              Secret                  simulated-aws    True     True    103s
+checkout-service-762pr-whzhp              PodDisruptionBudget     simulated-aws    True     True    103s
+checkout-service-762pr-x7q9g              RoleBinding             simulated-aws    True     True    103s
+checkout-service-762pr-zcz7h              Deployment              simulated-aws    True     True    104s
+checkout-service-762pr-zgt5j              ConfigMap               simulated-aws    True     True    103s
+checkout-service-db                       Namespace               simulated-aws    True     True    103s
+checkout-service-store                    Namespace               simulated-aws    True     True    103s
+
+$ kubectl get xobjectstores,xmanagedpostgreses,xappruntimes
+NAME                                                                       SYNCED   READY   COMPOSITION                                  AGE
+xobjectstore.platform.schonfeld.manas.dev/checkout-service-2-k575s-dr22h   True     True    xobjectstores.platform.schonfeld.manas.dev   3m23s
+xobjectstore.platform.schonfeld.manas.dev/checkout-service-762pr-kn6rn     True     True    xobjectstores.platform.schonfeld.manas.dev   107s
+
+NAME                                                                           SYNCED   READY   COMPOSITION                                       AGE
+xmanagedpostgres.platform.schonfeld.manas.dev/checkout-service-2-k575s-cv2mb   True     True    xmanagedpostgreses.platform.schonfeld.manas.dev   3m22s
+xmanagedpostgres.platform.schonfeld.manas.dev/checkout-service-762pr-4hlpw     True     True    xmanagedpostgreses.platform.schonfeld.manas.dev   107s
+
+NAME                                                                SYNCED   READY   COMPOSITION                                 AGE
+xappruntime.platform.schonfeld.manas.dev/checkout-service-2-k575s   True     True    xappruntimes.platform.schonfeld.manas.dev   3m23s
+xappruntime.platform.schonfeld.manas.dev/checkout-service-762pr     True     True    xappruntimes.platform.schonfeld.manas.dev   107s
+
+$ kubectl --context kind-simulated-aws get rolebindings -n checkout-service-store -o custom-columns=NAME:.metadata.name,ROLE:.roleRef.name,SA:.subjects[0].name
+NAME                    ROLE            SA
+bucket-reader-binding   bucket-reader   bucket-access-role
+bucket-writer-binding   bucket-writer   bucket-access-role
+
+$ kubectl --context kind-simulated-aws get role bucket-reader -n checkout-service-store -o jsonpath='{.rules}'
+[{"apiGroups":[""],"resourceNames":["bucket-config","bucket-lifecycle-policy"],"resources":["configmaps"],"verbs":["get","list","watch"]}]
+$ kubectl --context kind-simulated-aws get role bucket-writer -n checkout-service-store -o jsonpath='{.rules}'
+[{"apiGroups":[""],"resourceNames":["bucket-config"],"resources":["configmaps"],"verbs":["get","update","patch"]},{"apiGroups":[""],"resourceNames":["bucket-encryption-key"],"resources":["secrets"],"verbs":["get"]}]

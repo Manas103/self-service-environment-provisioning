@@ -1,0 +1,38 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xmanagedpostgreses.platform.schonfeld.manas.dev
+spec:
+  group: platform.schonfeld.manas.dev
+  names:
+    kind: XManagedPostgres
+    plural: xmanagedpostgreses
+  claimNames:
+    kind: ManagedPostgres
+    plural: managedpostgreses
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                dbName:
+                  type: string
+                targetNamespace:
+                  type: string
+                storageSize:
+                  type: string
+                  default: 1Gi
+              required:
+                - dbName
+                - targetNamespace
+            status:
+              type: object
+              properties:
+                connectionHost:
+                  type: string

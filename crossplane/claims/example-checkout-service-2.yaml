@@ -1,0 +1,12 @@
+apiVersion: platform.schonfeld.manas.dev/v1alpha1
+kind: AppRuntime
+metadata:
+  name: checkout-service-2
+  namespace: default
+spec:
+  appName: checkout-service-2
+  bucketName: checkout-uploads-2
+  dbName: checkout2
+  replicas: 2
+  cpuLimit: "500m"
+  memoryLimit: "512Mi"
